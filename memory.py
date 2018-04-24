@@ -113,10 +113,12 @@ class Memory(object):
         }
         return config
 
+
 class SequentialMemory(Memory):
+    # TODO: REVIEW THIS AGAIN!
     def __init__(self, limit, **kwargs):
         super(SequentialMemory, self).__init__(**kwargs)
-        
+
         self.limit = limit
 
         # Do not use deque to implement the memory. This data structure may seem convenient but
@@ -131,6 +133,7 @@ class SequentialMemory(Memory):
             # Draw random indexes such that we have at least a single entry before each
             # index.
             batch_idxs = sample_batch_indexes(0, self.nb_entries - 1, size=batch_size)
+
         batch_idxs = np.array(batch_idxs) + 1
         assert np.min(batch_idxs) >= 1
         assert np.max(batch_idxs) < self.nb_entries
@@ -160,6 +163,7 @@ class SequentialMemory(Memory):
                     # Otherwise we would leak into a different episode.
                     break
                 state0.insert(0, self.observations[current_idx])
+
             while len(state0) < self.window_length:
                 state0.insert(0, zeroed_observation(state0[0]))
             action = self.actions[idx - 1]
@@ -203,10 +207,9 @@ class SequentialMemory(Memory):
 
         return state0_batch, action_batch, reward_batch, state1_batch, terminal1_batch
 
-
     def append(self, observation, action, reward, terminal, training=True):
         super(SequentialMemory, self).append(observation, action, reward, terminal, training=training)
-        
+
         # This needs to be understood as follows: in `observation`, take `action`, obtain `reward`
         # and weather the next state is `terminal` or not.
         if training:
